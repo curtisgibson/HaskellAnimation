@@ -3,35 +3,41 @@ module MyAnimationNew where
 import Animation
 
 -- Makes a circle whos colour can change and the scale changes over time to oscillate
-makeBigSquare :: Varying Colour -> Double -> Double -> Double -> Animation
-makeBigSquare col sc r spin =
-                translate (always (sc*50, sc*40))
-                    (rotate (always r)
-                        (rotate (spinner spin)
-                            (scale (repeatSmooth (0,0) [(1, (0,0)), (2, (sc/10, sc/10)), (3, (0, 0))])
+makeBigSquare :: Varying Colour -> Double -> Double -> Double -> Double -> Double -> Animation
+makeBigSquare col interval rotateVal spinSpeed posX posY =
+                translate (always (interval*posY, interval*posY))
+                    (rotate (always rotateVal)
+                        (rotate (spinner spinSpeed)
+                            (scale (repeatSmooth (0,0) [(1, (0,0)), (2, (interval/15, interval/15)), (3, (0, 0))])
                                 (withBorder (col) (always 2)
                                     (withoutPaint (rect (always 300) (always 300)))))))
 
--- r = rotate direction
--- sc = ???
--- spin = speed of the spinner
-initBigSquares :: Int -> [Animation]
-initBigSquares numOfSquares = 
-            [makeBigSquare col (fromIntegral sc) (fromIntegral r) (fromIntegral spin)
-                | col <- [cycleSteps 0.1 [teal, black]], 
-                    sc <- [numOfSquares, numOfSquares-1 .. 1],
-                        r <- [45, 225],
-                            spin <- [-5..numOfSquares-5]]
+makeSmallSquare :: Animation
+makeSmallSquare = 
+                translate (cycleSmooth 1 [(0,0), (780,0), (780, 580), (800/2,600/2)])
+                    (withPaint (cycleSmooth 0.8 [teal, black, red, yellow])
+                        (rect (always 20) (always 20)))
 
---initSmallSquares :: Double -> Animation
---smallSquares spin = 
---            withPaint (always red)
---                (rect (always 20) (always 20))
+-- rotateVal = rotate direction
+-- interval = multiplier for transformation
+-- spinSpeed = speed of the spinner
+initBigSquares :: Int -> Double -> Double -> [Animation]
+initBigSquares numOfSquares posX posY = 
+            [makeBigSquare col (fromIntegral interval) (fromIntegral rotateVal) (fromIntegral spinSpeed) (posX) (posY)
+                | col <- [cycleSmooth 0.5 [teal, black, red, yellow]],
+                    interval <- [numOfSquares, numOfSquares-1 .. 1],
+                        rotateVal <- [45, 225],
+                            spinSpeed <- [-5..numOfSquares-5]]
+
+--initSmallSquares :: Animation
+--initSmallSquares = 
+--                [makeSmallSquare (fromIntegral posStart) (fromIntegral posEnd)
+--                    | posStart <- []]
 
 pic :: Animation
-pic = --combine (initSmallSquares 3)
-      --`plus`
-      combine (initBigSquares 10)
+pic = makeSmallSquare
+      `plus`
+      combine (initBigSquares 7 50 40)
 
 test :: IO ()
 test = writeFile "newAnimation.svg" (svg 800 600 pic)
@@ -40,6 +46,6 @@ test = writeFile "newAnimation.svg" (svg 800 600 pic)
 -- Call initBigSquares
 -- initBigSquares call makeBigSquare 
 
--- r = rotate direction
--- sc = ???
--- spin = speed of the spinner
+-- rotateVal = rotate direction
+-- interval = ???
+-- spinSpeed = speed of the spinner
