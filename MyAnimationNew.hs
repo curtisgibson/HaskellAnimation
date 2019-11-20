@@ -23,6 +23,7 @@ createBigSquare interval rotateVal spinSpeed posX posY =
                                 (withBorder (cycleSmooth 0.5 [teal, green, red, white, yellow]) (always (spinSpeed*2))
                                     (withoutPaint (rect (always 150) (always 150)))))))
 
+
 -- Small squares around the outside, called from initSmallSquares
 createSmallSquare :: Double -> Animation
 createSmallSquare speed = 
