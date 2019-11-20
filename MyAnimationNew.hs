@@ -2,7 +2,7 @@ module MyAnimation where
 
 import Animation
 
--- Sesaw Variables
+-- Seesaw Variables
 vertices :: [Point]
 vertices = [(500,645), (500, 653), (800,653), (800, 645)]
 
@@ -11,27 +11,10 @@ centre = (average (map fst vertices), average (map snd vertices))
 
 average :: [Length] -> Length
 average xs = sum xs / fromIntegral (length xs)
+
+negatePoint :: Point -> Point
+negatePoint (x, y) = (-x, -y)
 -- End of seesaw variables
-
--- Makes a circle whos colour can change and the scale changes over time to oscillate
-createBigSquare :: Double -> Double -> Double -> Double -> Double -> Animation
-createBigSquare interval rotateVal spinSpeed posX posY =
-                translate (always (interval*posY, interval*posY))
-                    (rotate (always rotateVal)
-                        (rotate (spinner spinSpeed)
-                            (scale (cycleSmooth 0.8 [(0.1, 0.1), (interval/10, interval/10), (interval/6, interval/6)])
-                                (withBorder (cycleSmooth 0.5 [teal, green, red, white, yellow]) (always (spinSpeed*2))
-                                    (withoutPaint (rect (always 150) (always 150)))))))
-
-
--- Small squares around the outside, called from initSmallSquares
-createSmallSquare :: Double -> Animation
-createSmallSquare speed = 
-                translate (cycleSmooth speed [(0,0), (780,0), (780, 580), (0, 580)])
-                    (rotate (spinner (speed*2))
-                        (scale (repeatSmooth (0,0) [(1, (0, 0)), (2, (speed*2, speed*2)), (3, (0, 0))])
-                            (withPaint (cycleSmooth speed [teal, black, red, yellow])
-                                (rect (always 20) (always 20)))))
 
 -- Initialiser for the large squares
 initBigSquares :: Int -> Double -> Double -> [Animation]
@@ -43,14 +26,34 @@ initBigSquares numOfSquares posX posY =
 
 -- Initialiser for the small squares
 initSmallSquares :: [Animation]
-initSmallSquares = 
+initSmallSquares =
                 [createSmallSquare speed
                     | speed <- [1..3]]
+
+-- Creates multiple square, depending on the number passed in the init. Called from initBigSquares
+createBigSquare :: Double -> Double -> Double -> Double -> Double -> Animation
+createBigSquare interval rotateVal spinSpeed posX posY =
+                translate (always (interval*posY, interval*posY))
+                    (rotate (always rotateVal)
+                        (rotate (spinner spinSpeed)
+                            (scale (cycleSmooth 0.8 [(0.1, 0.1), (interval/10, interval/10), (interval/6, interval/6)])
+                                (withBorder (cycleSmooth 0.5 [teal, green, red, white, yellow]) (always (spinSpeed*2))
+                                    (withoutPaint (rect (always 150) (always 150)))))))
+
+
+-- Creates multiple small squares around the perimeter, called from initSmallSquares
+createSmallSquare :: Double -> Animation
+createSmallSquare speed =
+                translate (cycleSmooth speed [(0,0), (780,0), (780, 580), (0, 580)])
+                    (rotate (spinner (speed*2))
+                        (scale (repeatSmooth (0,0) [(1, (0, 0)), (2, (speed*2, speed*2)), (3, (0, 0))])
+                            (withPaint (cycleSmooth speed [teal, white, red, blue])
+                                (rect (always 20) (always 20)))))
 
 -- Creates the seesaw animation
 seesaw :: Animation
 seesaw =
-        withBorder (always white) (always 5) -- Trinagle base
+        withBorder (always white) (always 5) -- Triangle base
             (withoutPaint (polygon [(600, 500), (560, 550), (640, 550)]))
         `plus`
         withPaint (cycleSteps 1 [red, blue]) -- Top of seesaw
@@ -67,12 +70,10 @@ seesaw =
             (translate (cycleSmooth 1 [(690, 330), (690, 450)])
                 (withoutPaint (circle (always 20))))
 
--- Take two numbers, and return the negative
-negatePoint :: Point -> Point
-negatePoint (x, y) = (-x, -y)
-
-pic :: Animation
-pic = withPaint (always black) -- Background colour
+-- Called upon start
+picture :: Animation
+picture =
+      withPaint (always black) -- Background colour
           (rect (always 800) (always 600))
       `plus`
       seesaw -- Seesaw animation
@@ -82,4 +83,4 @@ pic = withPaint (always black) -- Background colour
       combine (initBigSquares 7 50 40) -- Star features
 
 test :: IO ()
-test = writeFile "newAnimation.svg" (svg 800 600 pic)
+test = writeFile "newAnimation.svg" (svg 800 600 picture)
