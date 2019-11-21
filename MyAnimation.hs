@@ -72,6 +72,3 @@ picture =
       initSmallSquare -- Bordering square
       `plus`
       initBigSquare 7 50 40 -- Star features
-
-test :: IO ()
-test = writeFile "MyAnimation.svg" (svg 800 600 picture)
